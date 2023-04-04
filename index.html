@@ -1,12 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Choice Reaction Time Task</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        #app {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .box {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .box.red {
+            background-color: red;
+        }
+    </style>
 </head>
+  
 <body>
-  <p>Hello, World!</p>
+    <div id="app">
+        <div id="instructions">
+            <h1>Four Choice Reaction Time Task</h1>
+            <p>빨간색 상자가 나타나면 누르세요</p>
+            <p>dongkyun.koo@gmail.com</p>
+            <button id="start">Start</button>
+        </div>
+        <div id="experiment" style="display: none;">
+            <div id="boxes">
+                <button class="box" id="box1" disabled></button>
+                <button class="box" id="box2" disabled></button>
+                <button class="box" id="box3" disabled></button>
+                <button class="box" id="box4" disabled></button>
+            </div>
+            <div id="feedback" style="display: none;">
+                <p id="feedback-text"></p>
+            </div>
+            <div id="results" style="display: none;">
+                <h2>Results</h2>
+                <p id="results-text"></p>
+                <button id="download">Download Results</button>
+                <button id="retry">다시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const startButton = document.getElementById('start');
+            const experiment = document.getElementById('experiment');
+            const boxes = document.querySelectorAll('.box');
+            const feedback = document.getElementById('feedback');
+            const feedbackText = document.getElementById('feedback-text');
+            const results = document.getElementById('results');
+            const resultsText = document.getElementById('results-text');
+            const downloadButton = document.getElementById('download');
+            const retryButton = document.getElementById('retry');
+
+            let practiceMode = true;
+            let currentTarget;
+            let startTime;
+            let reactionTimes = [];
+            let trialCounter = 0;
+            const practiceTrials = 5;
+            const experimentTrials = 5;
+
+            function start() {
+                document.getElementById('instructions').style.display = 'none';
+                experiment.style.display = 'block';
+                runTrial();
+            }
+
+            let timeoutHandle;
+          
+            function runTrial() {
+                if (trialCounter === practiceTrials + experimentTrials) {
+                    showResults();
+                    return;
+                }
+
+                setTimeout(() => {
+                    currentTarget = boxes[Math.floor(Math.random() * boxes.length)];
+                    currentTarget.classList.add('red');
+                    startTime = new Date().getTime();
+                    boxes.forEach(box => {
+                        box.disabled = false;
+                    });
+                      
+                    timeoutHandle = setTimeout(() => {
+                        const rtObj = {
+                            time: 3000,
+                            correct: false,
+                            premature: false,
+                            timeout: true,
+                            incorrect: false,
+                        };
+                        reactionTimes.push(rtObj);
+                        clearTimeout(timeoutHandle);
+                        endTrial();
+                    }, 3000);                
+                }, 500);
+            }
+
+            function showResults() {
+                const totalTrialCount = experimentTrials;
+                const correctResponses = reactionTimes.filter(rt => rt.correct).length;
+                const propCorrect = correctResponses / totalTrialCount;
+                const meanRT = reactionTimes.reduce((acc, rt) => acc + rt.time, 0) / correctResponses;
+                
+                const squaredDiffs = reactionTimes
+                    .filter(rt => rt.correct)
+                    .map(rt => (rt.time - meanRT) ** 2);
+                const SD = Math.sqrt(squaredDiffs.reduce((acc, diff) => acc + diff, 0) / (correctResponses - 1));
+                const timeoutErrors = reactionTimes.filter(rt => rt.timeout).length;
+                const propTimeoutErrors = timeoutErrors / totalTrialCount;
+                const incorrectChoices = reactionTimes.filter(rt => rt.incorrect).length;
+                const propIncorrectChoices = incorrectChoices / totalTrialCount;
+                const csvContent = 'data:text/csv;charset=utf-8,' +
+                    ['Total Trial Count', 'Proportion Correct', 'Mean Reaction Time', 'Standard Deviation', 'Proportion Timeout Errors', 'Proportion Incorrect Choices'].join(',') + '\n' +
+                    [totalTrialCount, propCorrect.toFixed(2), meanRT.toFixed(2), SD.toFixed(2), propTimeoutErrors.toFixed(2), propIncorrectChoices.toFixed(2)].join(',');
+
+                downloadButton.setAttribute('href', encodeURI(csvContent));
+                downloadButton.setAttribute('download', 'reaction_times.csv');
+
+
+              
+                alert(`Results:
+Total Trial Count: ${totalTrialCount}
+Proportion Correct: ${propCorrect.toFixed(2)}
+Mean Reaction Time: ${meanRT.toFixed(2)} ms
+Standard Deviation: ${SD.toFixed(2)}
+Proportion Timeout Errors: ${propTimeoutErrors.toFixed(2)}
+Proportion Incorrect Choices: ${propIncorrectChoices.toFixed(2)}`);
+                
+              
+              results.style.display = 'block';
+                retryButton.style.display = 'inline-block';
+              
+            }
+          
+            function endTrial() {
+                boxes.forEach(box => {
+                    box.disabled = true;
+                    box.classList.remove('red');
+                });
+                
+                trialCounter++;
+                if (practiceMode && trialCounter >= practiceTrials) {
+                    practiceMode = false;
+                    trialCounter = 0;
+                    reactionTimes = [];
+                    setTimeout(() => {
+                        alert('연습 세션이 끝났습니다. 확인을 누르면 실험이 시작됩니다.');
+                        setTimeout(runTrial, 2000);
+                    }, 1000);
+                } else if (!practiceMode && trialCounter >= experimentTrials) {
+                    alert('실험이 종료되었습니다. 참여해주셔서 감사합니다.');
+                    showResults();
+                } else {
+                    setTimeout(runTrial, 1000);
+                }
+            }
+
+            function handleClick(box) {
+                const reactionTime = new Date().getTime() - startTime;
+
+                clearTimeout(timeoutHandle);
+              
+                const rtObj = {
+                  time: reactionTime,
+                  correct: box === currentTarget,
+                  timeout: false,
+                  incorrect: box !== currentTarget,
+                 };
+                 reactionTimes.push(rtObj);
+
+                if (practiceMode) {
+                    feedback.style.display = 'block';
+                    feedbackText.textContent = `Reaction time: ${reactionTime} ms`;
+                  
+                if (!rtObj.correct) {
+                    feedbackText.textContent += ' (Fail)';
+                }
+                  
+                    setTimeout(() => {
+                        feedback.style.display = 'none';
+                    }, 1000);
+                }
+                endTrial();
+            }
+
+            startButton.addEventListener('click', start);
+
+            boxes.forEach(box => {
+                box.addEventListener('click', () => handleClick(box));
+            });
+
+            downloadButton.addEventListener('click', () => {
+              const link = document.createElement('a');
+              link.setAttribute('href', downloadButton.getAttribute('href'));
+              link.setAttribute('download', 'reaction_times.csv');
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            });
+
+
+            retryButton.addEventListener('click', () => {
+                results.style.display = 'none';
+                retryButton.style.display = 'none';
+                trialCounter = 0;
+                reactionTimes = [];
+                alert('확인을 누르면 실험이 시작됩니다.');
+                setTimeout(runTrial, 2000);
+            });                 
+        }
+    </script>
+
 </body>
 </html>
+
+
