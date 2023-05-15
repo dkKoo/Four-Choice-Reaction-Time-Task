@@ -223,13 +223,21 @@ Proportion Incorrect Choices: ${propIncorrectChoices.toFixed(2)}`);
                 box.addEventListener('click', () => handleClick(box));
             });
 
-            downloadButton.addEventListener('click', () => {
-              const link = document.createElement('a');
-              link.setAttribute('href', downloadButton.getAttribute('href'));
-              link.setAttribute('download', 'reaction_times.csv');
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+            downloadButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const csvContent = 'data:text/csv;charset=utf-8,' +
+                    ['Total Trial Count', 'Proportion Correct', 'Mean Reaction Time', 'Standard Deviation', 'Proportion Timeout Errors', 'Proportion Incorrect Choices'].join(',') + '\n' +
+                    [totalTrialCount, propCorrect.toFixed(2), meanRT.toFixed(2), SD.toFixed(2), propTimeoutErrors.toFixed(2), propIncorrectChoices.toFixed(2)].join(',');
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', 'reaction_times.csv');
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
             });
 
             retryButton.addEventListener('click', () => {
