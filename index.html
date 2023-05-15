@@ -224,13 +224,13 @@ Proportion Incorrect Choices: ${propIncorrectChoices.toFixed(2)}`);
             });
 
             downloadButton.addEventListener('click', () => {
-                const link = document.createElement('a');
-                link.setAttribute('href', downloadButton.getAttribute('href'));
-                link.setAttribute('download', 'reaction_times.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
+              const link = document.createElement('a');
+              link.setAttribute('href', downloadButton.getAttribute('href'));
+              link.setAttribute('download', 'reaction_times.csv');
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            });
 
             retryButton.addEventListener('click', () => {
                 results.style.display = 'none';
