@@ -235,10 +235,19 @@ Proportion Incorrect Choices: ${propIncorrectChoices.toFixed(2)}`);
                 link.setAttribute('download', 'reaction_times.csv');
                 document.body.appendChild(link);
 
-                link.click();
+                // 휴대폰 브라우저에서 다운로드를 보장하기 위한 조건문
+                if (navigator.msSaveOrOpenBlob) {
+                    const blob = new Blob([decodeURIComponent(encodedUri)], {
+                        type: 'text/csv;charset=utf-8;'
+                    });
+                    navigator.msSaveBlob(blob, 'reaction_times.csv');
+                } else {
+                    link.click();
+                }
 
                 document.body.removeChild(link);
             });
+
 
             retryButton.addEventListener('click', () => {
                 results.style.display = 'none';
