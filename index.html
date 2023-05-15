@@ -48,7 +48,8 @@
     <div id="app">
         <div id="instructions">
             <h1>Four Choice Reaction Time Task</h1>
-            <p>빨간색 상자가 나타나면 누르세요</p>
+            <p>연습세션 이후 실험 세션이 시작됩니다.</p>
+            <p>빨간색 상자가 나타나면 최대한 빠르게 누르세요.</p>
             <p>dongkyun.koo@gmail.com</p>
             <button id="start">Start</button>
         </div>
@@ -65,7 +66,7 @@
             <div id="results" style="display: none;">
                 <h2>Results</h2>
                 <p id="results-text"></p>
-                <button id="download">Download Results</button>
+                <button id="download">결과지 다운로드</button>
                 <button id="retry">다시하기</button>
             </div>
         </div>
@@ -89,7 +90,7 @@
             let reactionTimes = [];
             let trialCounter = 0;
             const practiceTrials = 5;
-            const experimentTrials = 5;
+            const experimentTrials = 10;
 
             function start() {
                 document.getElementById('instructions').style.display = 'none';
