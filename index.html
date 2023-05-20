@@ -89,8 +89,8 @@
             let startTime;
             let reactionTimes = [];
             let trialCounter = 0;
-            const practiceTrials = 5;
-            const experimentTrials = 5;
+            const practiceTrials = 5;  %trial 횟수 변경(연습 세션-10번 예상)
+            const experimentTrials = 5;  % trial 횟수 변경(실험 세션-100번 예상)
 
             function start() {
                 document.getElementById('instructions').style.display = 'none';
@@ -116,7 +116,7 @@
                       
                     timeoutHandle = setTimeout(() => {
                         const rtObj = {
-                            time: 3000,
+                            time: 1000,
                             correct: false,
                             premature: false,
                             timeout: true,
@@ -125,7 +125,7 @@
                         reactionTimes.push(rtObj);
                         clearTimeout(timeoutHandle);
                         endTrial();
-                    }, 3000);                
+                    }, 1000);                
                 }, 500);
             }
 
